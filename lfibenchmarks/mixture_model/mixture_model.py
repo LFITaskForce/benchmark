@@ -1,16 +1,16 @@
 import torch
 import pyro
-from benchmark.pyro_simulator import PyroSimulator
+
+from lfibenchmarks import PyroSimulator
 
 
-class MixtureModel(PyroSimulator):
+class MixtureModelSimulator(PyroSimulator):
     def __init__(self, distributions):
-        super(MixtureModel, self).__init__()
+        super(MixtureModelSimulator, self).__init__()
 
         self.distributions = distributions
-
         for distribution in distributions:
-            if not isinstance(distribution, pyro.distributions.distribution.Distribution):
+            if not isinstance(distribution, pyro.distributions.Distribution):
                 raise ValueError("Distribution is not a pyro distribution!")
 
         self.n_components = len(self.distributions)
@@ -39,12 +39,12 @@ class MixtureModel(PyroSimulator):
         weights = inputs[:, :self.n_components]
         weights /= torch.sum(weights, axis=1)
 
+        x = 0.
         n_params_previous = self.n_components
 
-        x = 0.
-
         for i, (weight, dist, n_component_params) in enumerate(
-                zip(weights, self.distributions, self.n_component_params)):
+                zip(weights, self.distributions, self.n_component_params)
+        ):
             component_params = inputs[:, n_params_previous:n_params_previous + n_component_params]
             component_params = [component_params[:, i] for i in range(n_component_params)]
 
@@ -52,3 +52,5 @@ class MixtureModel(PyroSimulator):
 
             x = x + weight * x_component
             n_params_previous += n_component_params
+
+        return x
