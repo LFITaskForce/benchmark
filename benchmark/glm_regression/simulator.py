@@ -6,14 +6,14 @@ Probabilistic generative linear model.
 import torch
 import pyro
 
-from lfibenchmarks import PyroSimulator
+from benchmark import PyroSimulator
 
 
 
-class Simulator(PyroSimulator):
+class GLMRegression(PyroSimulator):
 
     def __init__(self):
-        super(Simulator, self).__init__()
+        super().__init__()
 
     def forward(self, inputs):
         inputs = inputs.view(-1, 3)
