@@ -3,6 +3,7 @@
 #
 
 import numpy as np
+import torch
 from lfibenchmarks import NumpySimulator
 
 
@@ -36,11 +37,11 @@ class Simulator(NumpySimulator):
     """
 
     def __init__(self, initial_population_size=2, times=np.linspace(0, 100, 100), sensitivities=False):
-        super(LogisticModel, self).__init__()
+        super(Simulator, self).__init__()
         self._p0 = float(initial_population_size)
         if self._p0 < 0:
             raise ValueError('Population size cannot be negative.')
-        self._times = np.asarray(times)
+        self._times = torch.tensor(times, dtype=torch.float)
         if np.any(times < 0):
             raise ValueError('Negative times are not allowed.')
         self._sensitivities = sensitivities
@@ -51,23 +52,27 @@ class Simulator(NumpySimulator):
         r = inputs[:, 0]
         k = inputs[:, 1]
 
-        if self._p0 == 0 or k < 0:
+        print(self._times.shape)
+        values = torch.zeros(num_samples, len(self._times))
+        if self._sensitivities:
+            dvalues_dp = torch.zeros(num_samples, len(self._times), 2)
+
+        for i in range(num_samples):
+            if self._p0 == 0 or k[i] < 0:
+                continue
+
+            exp = np.exp(-r[i] * self._times)
+            c = (k[i] / self._p0 - 1)
+
+            values[i] = k[i] / (1 + c * exp)
+
             if self._sensitivities:
-                return np.zeros(self._times.shape), \
-                    np.zeros((len(self._times), 2))
-            else:
-                return np.zeros(self._times.shape)
-
-        exp = np.exp(-r * self._times)
-        c = (k / self._p0 - 1)
-
-        values = k / (1 + c * exp)
+                dvalues_dp[i] = torch.empty((len(self._times), 2))
+                dvalues_dp[i][:, 0] = k[i] * self._times * c * exp / (c * exp + 1)**2
+                dvalues_dp[i][:, 1] = -k[i] * exp / \
+                    (self._p0 * (c * exp + 1)**2) + 1 / (c * exp + 1)
 
         if self._sensitivities:
-            dvalues_dp = np.empty((len(self._times), 2))
-            dvalues_dp[:, 0] = k * self._times * c * exp / (c * exp + 1)**2
-            dvalues_dp[:, 1] = -k * exp / \
-                (self._p0 * (c * exp + 1)**2) + 1 / (c * exp + 1)
             return values, dvalues_dp
         else:
             return values
