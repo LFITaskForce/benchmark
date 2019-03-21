@@ -11,5 +11,6 @@ class Simulator:
         return self.forward(inputs)
 
 
+
 class IntractableException(Exception):
     pass
