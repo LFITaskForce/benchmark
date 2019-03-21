@@ -1,4 +1,4 @@
-"""`lfibenchmarks` setup file."""
+"""`benchmark` setup file."""
 
 import os
 import re
@@ -8,7 +8,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 
-package_name = "lfibenchmarks"
+package_name = "benchmark"
 exclusions = ["doc", "examples"]
 packages = find_packages(exclude=exclusions)
 

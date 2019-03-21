@@ -2,7 +2,7 @@ import pyro
 import pprint
 import torch
 
-from lfibenchmarks.glm_regression import Simulator
+from benchmark.glm_regression import GLMRegression as Simulator
 
 
 
