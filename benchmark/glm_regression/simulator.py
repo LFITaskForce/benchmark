@@ -27,8 +27,8 @@ class GLMRegression(PyroSimulator):
         x = 10 * pyro.sample("x", distribution_u)
         y_err = .1 + .5 * pyro.sample("y_err", distribution_u)
         y = m * x + b
-        y += (f * y).abs() * pyro.sample("y_1", distribution_n)
-        y += y_err * pyro.sample("y_2", distribution_n)
+        y = y + (f * y).abs() * pyro.sample("y_1", distribution_n)
+        y = y + y_err * pyro.sample("y_2", distribution_n)
         x = x.view(-1, 1)
         y = y.view(-1, 1)
         y_err = y_err.view(-1, 1)
