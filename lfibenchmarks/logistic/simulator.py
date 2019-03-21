@@ -21,19 +21,20 @@ class Simulator(NumpySimulator):
                                           {p_0 ((k/p_0-1)\exp(-r t) + 1)^2}
                                          + \\frac{1}{(k/p_0 - 1)\exp(-r t) + 1}
 
-    Has three parameters:
-
-    p_0 = initial population size
+    Has two parameters:
     r = growth rate
     k = carrying capacity
+
+    Three hyperparameters:
+    p_0 = initial population size
+    times = array of sampled times
+    sensitivities = boolean of extra output of sensitivities
     
     Has two parameters: A growth rate :math:`r` and a carrying capacity
     :math:`k`. The initial population size :math:`f(0) = p_0` can be set using
     the (optional) named constructor arg ``initial_population_size``
 
     [1] https://en.wikipedia.org/wiki/Population_growth
-
-    *Extends:* :class:`pints.Simulator`.
     """
 
     def __init__(self, initial_population_size=2, times=np.linspace(0, 100, 100), sensitivities=False):
