@@ -39,26 +39,27 @@ class MixtureModelSimulator(PyroSimulator):
             outputs (torch.Tensor): Values of the data with shape (n_batch, 1).
 
         """
+        n_samples = inputs.size()[0]
         assert inputs.size()[1] == self.n_params, "Inconsistent input shape"
 
         weights = inputs[:, :self.n_components]
-        weights /= torch.sum(weights, dim=1)
+        weights = weights / torch.sum(weights, dim=1).unsqueeze(1)
 
         cat_dist = pyro.distributions.Categorical(probs=weights)
         components = pyro.sample("components", cat_dist)
 
-        x = 0.
+        x = torch.zeros(n_samples, 1)
         n_params_previous = self.n_components
 
-        for i, (weight, distribution, n_component_params) in enumerate(
-                zip(weights, self.distributions, self.n_component_params)
+        for i, (distribution, n_component_params) in enumerate(
+                zip(self.distributions, self.n_component_params)
         ):
             mask = (components == i)
 
-            component_params = inputs[mask, n_params_previous:n_params_previous + n_component_params]
-            component_params = [component_params[:, i] for i in range(n_component_params)]
-
-            x[mask, :] = pyro.sample("component_{}".format(i), distribution(*component_params))
+            if torch.sum(mask) > 0:
+                component_params = inputs[mask, n_params_previous:n_params_previous + n_component_params]
+                component_params = [component_params[:, i] for i in range(n_component_params)]
+                x[mask, :] = pyro.sample("component_{}".format(i), distribution(*component_params))
 
             n_params_previous += n_component_params
 
@@ -72,7 +73,7 @@ class MixtureModelSimulator(PyroSimulator):
         n_params_previous = self.n_components
 
         for i, (weight, distribution, n_component_params) in enumerate(
-                zip(weights, self.distributions, self.n_component_params)
+                zip(weights.T, self.distributions, self.n_component_params)
         ):
             component_params = inputs[:, n_params_previous:n_params_previous + n_component_params]
             component_params = [component_params[:, i] for i in range(n_component_params)]
