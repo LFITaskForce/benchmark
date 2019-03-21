@@ -59,7 +59,7 @@ class MixtureModelSimulator(PyroSimulator):
             if torch.sum(mask) > 0:
                 component_params = inputs[mask, n_params_previous:n_params_previous + n_component_params]
                 component_params = [component_params[:, i] for i in range(n_component_params)]
-                x[mask, :] = pyro.sample("component_{}".format(i), distribution(*component_params))
+                x[mask, :] = pyro.sample("component_{}".format(i), distribution(*component_params)).view(-1, 1)
 
             n_params_previous += n_component_params
 
@@ -67,19 +67,20 @@ class MixtureModelSimulator(PyroSimulator):
 
     def log_prob(self, inputs, outputs):
         weights = inputs[:, :self.n_components]
-        weights /= torch.sum(weights, dim=1)
+        weights = weights / torch.sum(weights, dim=1).unsqueeze(1)
 
-        log_prob = 0.
+        prob = 0.
         n_params_previous = self.n_components
 
-        for i, (weight, distribution, n_component_params) in enumerate(
-                zip(weights.T, self.distributions, self.n_component_params)
+        for i, (distribution, n_component_params) in enumerate(
+                zip(self.distributions, self.n_component_params)
         ):
             component_params = inputs[:, n_params_previous:n_params_previous + n_component_params]
             component_params = [component_params[:, i] for i in range(n_component_params)]
 
-            log_prob = log_prob + distribution(*component_params).log_prob(outputs)
+            prob = prob + weights[:, i] * torch.exp(distribution(*component_params).log_prob(outputs.squeeze()))
 
             n_params_previous += n_component_params
 
+        log_prob = torch.log(prob)
         return log_prob
