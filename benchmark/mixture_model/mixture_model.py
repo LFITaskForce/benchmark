@@ -1,16 +1,26 @@
 import torch
 import pyro
 
-from lfibenchmarks import PyroSimulator
+from benchmark import PyroSimulator
 
 
 class MixtureModelSimulator(PyroSimulator):
+    """
+    Simulator for a general mixture model.
+
+    Args:
+        distributions (list of pyro.distributions.Distribution): Distributions for the individual components of the
+        mixture model.
+
+    """
+
     def __init__(self, distributions):
         super(MixtureModelSimulator, self).__init__()
 
         self.distributions = distributions
         for distribution in distributions:
-            if not isinstance(distribution, pyro.distributions.Distribution):
+            if not (isinstance(distribution, pyro.distributions.Distribution)
+                    or isinstance(distribution, torch.distributions.Distribution)):
                 raise ValueError("Distribution is not a pyro distribution!")
 
         self.n_components = len(self.distributions)
@@ -31,7 +41,7 @@ class MixtureModelSimulator(PyroSimulator):
             mean of the second Gaussian, and the last one the standard deviation of the second Gaussian.
 
         Returns:
-            outputs (torch.Tensor): 
+            outputs (torch.Tensor): Values of the data with shape (n_batch, 1).
 
         """
         assert inputs.size[1] == self.n_params, "Inconsistent shape"
