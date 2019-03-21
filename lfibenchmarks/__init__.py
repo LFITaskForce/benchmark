@@ -14,6 +14,10 @@ __author__ = [
     "Umberto Simola"]
 
 # Global namespace.
+from lfibenchmarks.simulator import Simulator
+from lfibenchmarks.numpy_simulator import NumpySimulator
+from lfibenchmarks.pyro_simulator import PyroSimulator
+
 from pyro.util import set_rng_seed
 
 # Default configuration.

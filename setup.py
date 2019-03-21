@@ -12,7 +12,6 @@ package_name = "lfibenchmarks"
 exclusions = ["doc", "examples"]
 packages = find_packages(exclude=exclusions)
 
-# Get the version string of hypothesis.
 with open(os.path.join(package_name, "__init__.py"), "rt") as fh:
     _version = re.search(
         '__version__\s*=\s*"(?P<version>.*)"\n',

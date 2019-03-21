@@ -1,4 +1,4 @@
-from benchmark.simulator import Simulator
+from benchmark import Simulator
 
 
 
