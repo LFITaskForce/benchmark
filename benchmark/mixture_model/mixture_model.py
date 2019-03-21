@@ -18,11 +18,6 @@ class MixtureModelSimulator(PyroSimulator):
         super(MixtureModelSimulator, self).__init__()
 
         self.distributions = distributions
-        for distribution in distributions:
-            if not (isinstance(distribution, pyro.distributions.Distribution)
-                    or isinstance(distribution, torch.distributions.Distribution)):
-                raise ValueError("Distribution is not a pyro distribution!")
-
         self.n_components = len(self.distributions)
         self.n_component_params = [len(dist.arg_constraints) for dist in distributions]
         self.n_params = self.n_components + sum(self.n_component_params)
@@ -44,23 +39,46 @@ class MixtureModelSimulator(PyroSimulator):
             outputs (torch.Tensor): Values of the data with shape (n_batch, 1).
 
         """
-        assert inputs.size[1] == self.n_params, "Inconsistent shape"
+        assert inputs.size()[1] == self.n_params, "Inconsistent input shape"
 
         weights = inputs[:, :self.n_components]
-        weights /= torch.sum(weights, axis=1)
+        weights /= torch.sum(weights, dim=1)
+
+        cat_dist = pyro.distributions.Categorical(probs=weights)
+        components = pyro.sample("components", cat_dist)
 
         x = 0.
         n_params_previous = self.n_components
 
-        for i, (weight, dist, n_component_params) in enumerate(
+        for i, (weight, distribution, n_component_params) in enumerate(
+                zip(weights, self.distributions, self.n_component_params)
+        ):
+            mask = (components == i)
+
+            component_params = inputs[mask, n_params_previous:n_params_previous + n_component_params]
+            component_params = [component_params[:, i] for i in range(n_component_params)]
+
+            x[mask, :] = pyro.sample("component_{}".format(i), distribution(*component_params))
+
+            n_params_previous += n_component_params
+
+        return x
+
+    def log_prob(self, inputs, outputs):
+        weights = inputs[:, :self.n_components]
+        weights /= torch.sum(weights, dim=1)
+
+        log_prob = 0.
+        n_params_previous = self.n_components
+
+        for i, (weight, distribution, n_component_params) in enumerate(
                 zip(weights, self.distributions, self.n_component_params)
         ):
             component_params = inputs[:, n_params_previous:n_params_previous + n_component_params]
             component_params = [component_params[:, i] for i in range(n_component_params)]
 
-            x_component = pyro.sample("component_{}".format(i), dist(*component_params))
+            log_prob = log_prob + distribution(*component_params).log_prob(outputs)
 
-            x = x + weight * x_component
             n_params_previous += n_component_params
 
-        return x
+        return log_prob
