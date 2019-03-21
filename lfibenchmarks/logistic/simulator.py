@@ -53,7 +53,6 @@ class Simulator(NumpySimulator):
         r = inputs[:, 0]
         k = inputs[:, 1]
 
-        print(self._times.shape)
         values = torch.zeros(num_samples, len(self._times))
         if self._sensitivities:
             dvalues_dp = torch.zeros(num_samples, len(self._times), 2)
