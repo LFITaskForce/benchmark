@@ -8,7 +8,7 @@ __version__ = "0.0.1"
 __author__ = [
     "Danley Hsu",
     "Henri Pesonen",
-    "Jan Matthis",
+    "Jan-Matthis Lueckmann",
     "Joeri Hermans",
     "Johann Brehmer",
     "Umberto Simola"]
