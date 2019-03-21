@@ -1,4 +1,4 @@
-from lfibenchmarks import Simulator
+from benchmark import Simulator
 
 
 
