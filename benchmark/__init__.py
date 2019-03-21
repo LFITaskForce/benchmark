@@ -13,8 +13,9 @@ __author__ = [
     "Johann Brehmer",
     "Umberto Simola"]
 
-# Global namespace.
-from lfibenchmarks.simulator import Simulator
-from lfibenchmarks.numpy_simulator import NumpySimulator
-from lfibenchmarks.pyro_simulator import PyroSimulator
+# Global namespace
+from benchmark.simulator import Simulator
+from benchmark.numpy_simulator import NumpySimulator
+from benchmark.pyro_simulator import PyroSimulator
+
 from pyro.util import set_rng_seed

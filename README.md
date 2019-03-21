@@ -1,22 +1,21 @@
-# likelihood-free inference benchmarks
+# Benchmarks for likelihood-free inference
 
 TODO
 
 ## Installation
 
-### Pip
-```sh
-pip install lfi-benchmarks
-```
-
 ### From source
 ```sh
-git clone https://github.com/LFITaskForce/benchmarks
+git clone https://github.com/LFITaskForce/benchmark
 cd benchmarks && pip install -e .
 ```
+### Pip
+Not yet
+
 
 ## Credits
 `TODO`
 
+
 ## License
-`lfibenchmarks` is x-style licensed, as found in the LICENSE file.
+`benchmark` is x-style licensed, as found in the LICENSE file.
