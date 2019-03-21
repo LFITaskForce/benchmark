@@ -1,5 +1,5 @@
 #
-# Logistic toy model.
+# Goodwin oscillator toy model.
 #
 
 import numpy as np
