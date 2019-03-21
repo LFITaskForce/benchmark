@@ -14,9 +14,6 @@ def simulator(parameters):
 
 input = torch.tensor([1., 2.])
 
-#simulator(input)
-
 trace = pyro.poutine.trace(simulator).get_trace(input)
 
-
-trace(dir(trace))
+print(trace.nodes)
