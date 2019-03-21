@@ -1,0 +1,1 @@
+from lfibenchmarks.goodwin_oscillator.simulator import Simulator
