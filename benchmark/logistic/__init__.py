@@ -1,1 +1,1 @@
-from lfibenchmarks.logistic.simulator import Simulator
+from benchmark.logistic.simulator import Simulator

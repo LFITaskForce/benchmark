@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import pprint
 
-from lfibenchmarks.hodgkin_huxley import Simulator
+from benchmark.hodgkin_huxley import Simulator
 
 inputs = torch.tensor([0.01, 10, 10, 0.125, 80])
 simulator = Simulator()

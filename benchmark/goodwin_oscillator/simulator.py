@@ -5,7 +5,7 @@
 import numpy as np
 import torch
 import scipy.integrate
-from lfibenchmarks import NumpySimulator
+from benchmark import NumpySimulator
 
 
 class Simulator(NumpySimulator):

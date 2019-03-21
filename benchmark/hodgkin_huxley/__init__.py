@@ -1,1 +1,1 @@
-from lfibenchmarks.hodgkin_huxley.simulator import Simulator
+from benchmark.hodgkin_huxley.simulator import Simulator

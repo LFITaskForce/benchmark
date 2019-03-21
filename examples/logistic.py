@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import pprint
 
-from lfibenchmarks.logistic import Simulator
+from benchmark.logistic import Simulator
 
 inputs = torch.tensor([0.5, 100.])
 simulator = Simulator()
