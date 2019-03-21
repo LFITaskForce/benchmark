@@ -1,5 +1,7 @@
 import pyro
+
 from benchmark.simulator import Simulator
+
 
 
 class PyroSimulator(Simulator):

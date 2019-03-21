@@ -1,6 +1,7 @@
 from benchmark.simulator import Simulator
 
 
+
 class NumpySimulator(Simulator):
     """ Numpy simulator interface """
 
