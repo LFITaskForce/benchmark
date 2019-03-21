@@ -1,5 +1,3 @@
-
-
 class Simulator:
     """ Abstract simulator interface. """
 
