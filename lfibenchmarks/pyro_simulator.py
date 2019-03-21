@@ -1,6 +1,6 @@
 import pyro
 
-from benchmark import Simulator
+from lfibenchmarks import Simulator
 
 
 
