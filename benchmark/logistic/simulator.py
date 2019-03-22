@@ -2,12 +2,13 @@
 # Logistic toy model.
 #
 
-import numpy as np
+#import numpy as np
 import torch
-from benchmark import NumpySimulator
+import pyro
+from benchmark import PyroSimulator
 
 
-class Simulator(NumpySimulator):
+class Simulator(PyroSimulator):
 
     """
     Logistic model of population growth [1].
@@ -27,25 +28,30 @@ class Simulator(NumpySimulator):
 
     Three hyperparameters:
     p_0 = initial population size
+    noise = std. dev. of normal noise applied to output
     times = array of sampled times
-    sensitivities = boolean of extra output of sensitivities
     
     Has two parameters: A growth rate :math:`r` and a carrying capacity
     :math:`k`. The initial population size :math:`f(0) = p_0` can be set using
     the (optional) named constructor arg ``initial_population_size``
 
+    Has noise drawn from an absolute valued normal distribution with mean 0 
+    and std. dev.  applied as noise
+
     [1] https://en.wikipedia.org/wiki/Population_growth
     """
 
-    def __init__(self, initial_population_size=2, times=np.linspace(0, 100, 100), sensitivities=False):
+    def __init__(self, initial_population_size=2, noise=1, times=torch.linspace(0, 100, 100)):
         super(Simulator, self).__init__()
         self._p0 = float(initial_population_size)
         if self._p0 < 0:
             raise ValueError('Population size cannot be negative.')
         self._times = torch.tensor(times, dtype=torch.float)
-        if np.any(times < 0):
+        if torch.any(times < 0):
             raise ValueError('Negative times are not allowed.')
-        self._sensitivities = sensitivities
+        self._noise = float(noise)
+        if self._noise < 0:
+            raise ValueError('Noise level must be non-negative.')
 
     def forward(self, inputs):
         inputs = inputs.view(-1, 2)
@@ -54,28 +60,17 @@ class Simulator(NumpySimulator):
         k = inputs[:, 1]
 
         values = torch.zeros(num_samples, len(self._times))
-        if self._sensitivities:
-            dvalues_dp = torch.zeros(num_samples, len(self._times), 2)
+        distribution_n = pyro.distributions.Normal(0, self._noise).expand([num_samples, len(self._times)])
 
-        for i in range(num_samples):
-            if self._p0 == 0 or k[i] < 0:
-                continue
+        if self._p0 != 0:
+            ind_list = torch.nonzero(k)
+            exp = torch.exp(-r[ind_list] * self._times)
+            c = (k[ind_list] / self._p0 - 1)
 
-            exp = np.exp(-r[i] * self._times)
-            c = (k[i] / self._p0 - 1)
+            values[ind_list] = k[ind_list] / (1 + c * exp)
 
-            values[i] = k[i] / (1 + c * exp)
-
-            if self._sensitivities:
-                dvalues_dp[i] = torch.empty((len(self._times), 2))
-                dvalues_dp[i][:, 0] = k[i] * self._times * c * exp / (c * exp + 1)**2
-                dvalues_dp[i][:, 1] = -k[i] * exp / \
-                    (self._p0 * (c * exp + 1)**2) + 1 / (c * exp + 1)
-
-        if self._sensitivities:
-            return values, dvalues_dp
-        else:
-            return values
+        values += torch.abs(pyro.sample("y_err", distribution_n))
+        return values
 """
     def suggested_parameters(self):
 
