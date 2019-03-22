@@ -1,25 +1,27 @@
 import torch
+from torch.autograd import grad
 import inspect
 
 
 def calculate_joint_log_ratio(trace, params0=None, params1=None):
     log_r = 0.
     for dist, z, params in _get_branchings(trace):
-        print(dist, z, params)
+        print("")
+        print("Distribution:", dist)
+        print("z:", z)
+        print("params:", params)
 
-        #params0_ = _wrap_params(params, params0)
-        #params1_ = _wrap_params(params, params1)
-        #log_r += _individual_log_ratio(dist, z, params0_, params1_)
+        # params0_ = _wrap_params(params, params0)
+        # params1_ = _wrap_params(params, params1)
+        # log_r += _individual_log_ratio(dist, z, params0_, params1_)
 
     return log_r
 
 
-def calculate_joint_score(trace, params=None):
+def calculate_joint_score(trace, params):
     log_r = 0.
     for dist, z, params in _get_branchings(trace):
-        params_ = _wrap_params(params, params)
-        log_r += _individual_score(dist, z, params_)
-
+        log_r += _individual_score(dist, z, None, params)
     return log_r
 
 
@@ -61,14 +63,22 @@ def _individual_log_prob(dist, z, params=None):
     return new_dist.log_prob(z)
 
 
-def _individual_log_ratio(dist, z, params0=None, params1=None):
+def _individual_log_ratio(dist, z, params0, params1):
     log_p0 = _individual_log_prob(dist, z, params0)
     log_p1 = _individual_log_prob(dist, z, params1)
     return log_p0 - log_p1
 
 
-def _individual_score(dist, z, params=None):
-    raise NotImplementedError
+def _individual_score(dist, z, params, theta):
+    log_p = _individual_log_prob(dist, z, params)
+    score, = grad(
+        log_p,
+        theta,
+        grad_outputs=torch.ones_like(log_p.data),
+        only_inputs=True,
+        create_graph=False,
+    )
+    return score
 
 
 def _get_param_names(distribution):
