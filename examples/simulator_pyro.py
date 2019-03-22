@@ -1,3 +1,5 @@
+# Minimal example of a simulator in Pyro with 'gold'
+
 import torch
 import pyro
 import pyro.distributions as dist

@@ -1,3 +1,5 @@
+# Minimal example of a simulator in TFP with 'gold'
+
 import tensorflow as tf
 import tensorflow_probability as tfp
 
