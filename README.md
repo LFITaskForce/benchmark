@@ -1,7 +1,6 @@
 # Benchmarks for likelihood-free inference
 
-![https://img.shields.io/gitter/room/LFITaskForce/Benchmarks.svg](https://gitter.im/LFITaskForce/Benchmarks
-)
+![Gitter](https://img.shields.io/gitter/room/LFITaskForce/Benchmarks.svg)
 
 TODO
 
