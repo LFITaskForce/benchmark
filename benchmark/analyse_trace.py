@@ -57,7 +57,7 @@ def _get_branchings(trace):
 
 def _individual_log_prob(dist, z, params=None):
     if params is None:
-        return dist.log_p(z)
+        return dist.log_prob(z)
 
     new_dist = type(dist)(params)
     return new_dist.log_prob(z)
