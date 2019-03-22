@@ -78,7 +78,9 @@ class MixtureModelSimulator(PyroSimulator):
             component_params = inputs[:, n_params_previous:n_params_previous + n_component_params]
             component_params = [component_params[:, i] for i in range(n_component_params)]
 
-            prob = prob + weights[:, i] * torch.exp(distribution(*component_params).log_prob(outputs.squeeze()))
+            support = distribution.support.check(outputs).to(torch.float).squeeze()
+
+            prob = prob + weights[:, i] * support * torch.exp(distribution(*component_params).log_prob(outputs.squeeze()))
 
             n_params_previous += n_component_params
 
