@@ -3,6 +3,18 @@ from torch.autograd import grad
 import inspect
 
 
+def calculate_joint_log_prob(trace, params=None):
+    log_p = 0.
+    for dist, z, params in _get_branchings(trace):
+        print("")
+        print("Distribution:", dist)
+        print("z:", z)
+        print("params:", params)
+        log_p = log_p + _individual_log_prob(dist, z, None)
+
+    return log_p
+
+
 def calculate_joint_log_ratio(trace, params0=None, params1=None):
     log_r = 0.
     for dist, z, params in _get_branchings(trace):
@@ -19,10 +31,10 @@ def calculate_joint_log_ratio(trace, params0=None, params1=None):
 
 
 def calculate_joint_score(trace, params):
-    log_r = 0.
+    score = 0.
     for dist, z, params in _get_branchings(trace):
-        log_r += _individual_score(dist, z, None, params)
-    return log_r
+        score = score + _individual_score(dist, z, None, params)
+    return score
 
 
 def _wrap_params(original_params, new_params=None):
