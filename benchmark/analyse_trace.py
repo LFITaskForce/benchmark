@@ -1,5 +1,6 @@
 import torch
 from torch.autograd import grad
+from pyro import poutine
 import inspect
 
 
@@ -7,6 +8,13 @@ def calculate_x(trace):
     node = trace.nodes["_RETURN"]
     x = node["value"]
     return x
+
+
+def calculate_joint_log_prob(trace):
+    log_p = 0.
+    for dist, z, _ in _get_branchings(trace):
+        log_p = log_p + _individual_log_p(dist, z)
+    return log_p
 
 
 def calculate_joint_score(trace, params):
@@ -17,7 +25,13 @@ def calculate_joint_score(trace, params):
 
 
 def calculate_joint_likelihood_ratio(trace, params_num, params_den):
-    return None
+    trace_num = _replay_trace(trace, params_num)
+    trace_den = _replay_trace(trace, params_den)
+
+    log_p_num = calculate_joint_log_prob(trace_num)
+    log_p_den = calculate_joint_log_prob(trace_den)
+
+    return log_p_num - log_p_den
 
 
 def _get_branchings(trace):
@@ -40,6 +54,20 @@ def _get_branchings(trace):
         yield dist, z, params
 
 
+def _replay_trace(trace, params):
+    if params is None:
+        return trace
+
+    # TODO
+    replayed_trace = poutine.trace(
+        poutine.replay(model.forward, trace)
+    )
+
+
+def _individual_log_p(dist, z):
+    return dist.log_prob(z)
+
+
 def _individual_score(dist, z, theta):
     log_p = dist.log_prob(z)
     score, = grad(
@@ -50,19 +78,6 @@ def _individual_score(dist, z, theta):
         create_graph=False,
     )
     return score
-
-
-def _individual_log_ratio(dist, z, theta0, theta1):
-    if theta0 is None:
-        log_p0 = dist.log_prob(z)
-    else:
-        pass
-        # TODO
-        # look up replay() in Pyro Poutine
-
-    # TODO
-
-    return log_p0 - log_p1
 
 
 def _get_param_names(distribution):
