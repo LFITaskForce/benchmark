@@ -1,5 +1,7 @@
 # Benchmarks for likelihood-free inference
 
+[![Gitter](https://img.shields.io/gitter/room/LFITaskForce/Benchmarks.svg)](https://gitter.im/LFITaskForce/Benchmarks)
+
 TODO
 
 ## Installation
