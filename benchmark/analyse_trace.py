@@ -3,11 +3,21 @@ from torch.autograd import grad
 import inspect
 
 
+def calculate_x(trace):
+    node = trace.nodes["_RETURN"]
+    x = node["value"]
+    return x
+
+
 def calculate_joint_score(trace, params):
     score = 0.
     for dist, z, _ in _get_branchings(trace):
         score = score + _individual_score(dist, z, params)
     return score
+
+
+def calculate_joint_likelihood_ratio(trace, params_num, params_den):
+    return None
 
 
 def _get_branchings(trace):
@@ -19,7 +29,6 @@ def _get_branchings(trace):
         dist = node["fn"]
         z = node["value"]
 
-        param_names = _get_param_names(dist)
         params = []
         for param_name in _get_param_names(dist):
             param = getattr(dist, param_name)
