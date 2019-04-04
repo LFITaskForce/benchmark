@@ -37,7 +37,7 @@ class PyroSimulator(Simulator):
         trace = self.trace(inputs)
 
         x = self._calculate_x(trace)
-        joint_score = self._calculate_join_score(trace, inputs)
+        joint_score = self._calculate_joint_score(trace, inputs)
         joint_likelihood_ratio = self._calculate_joint_likelihood_ratio(trace, inputs_num, inputs_den)
 
         return x, joint_score, joint_likelihood_ratio
