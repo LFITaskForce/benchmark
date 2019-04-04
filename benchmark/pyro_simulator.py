@@ -24,23 +24,27 @@ class PyroSimulator(Simulator):
         Args:
             inputs (torch.Tensor): Values of the parameters used for sampling. Have shape (n_batch, n_parameters). The
                                    joint score is also evaluated at these parameters.
-            inputs_num (torch.Tensor): Values of the parameters used for the numerator of the joint likelihood ratio.
-            inputs_den (torch.Tensor): Values of the parameters used for the denominator of the joint likelihood ratio.
+            inputs_num (torch.Tensor or None): Values of the parameters used for the numerator of the joint likelihood
+                                               ratio. If None, inputs is used instead.
+            inputs_den (torch.Tensor or None): Values of the parameters used for the denominator of the joint likelihood
+                                               ratio. If None, inputs is used instead.
 
         Returns:
             outputs (torch.Tensor): Generated data (observables), sampled from `p(outputs | inputs)`.
             joint_score (torch.Tensor): Joint score `grad_inputs log p(outputs, latents | inputs)`.
-            joint_score (torch.Tensor): Joint log likelihood ratio
-                                        `log (p(outputs, latents | inputs_num) / p(outputs, latents | inputs_den))`.
+            joint_log_likelihood_ratio (torch.Tensor): Joint log likelihood ratio
+                                            `log (p(outputs, latents | inputs_num) / p(outputs, latents | inputs_den))`.
 
         """
+        inputs.requires_grad = True
+
         trace = self.trace(inputs)
 
         x = self._calculate_x(trace)
         joint_score = self._calculate_joint_score(trace, inputs)
-        joint_likelihood_ratio = self._calculate_joint_likelihood_ratio(trace, inputs_num, inputs_den)
+        joint_log_likelihood_ratio = self._calculate_joint_log_likelihood_ratio(trace, inputs_num, inputs_den)
 
-        return x, joint_score, joint_likelihood_ratio
+        return x, joint_score, joint_log_likelihood_ratio
 
     def _replayed_trace(self, original_trace, inputs):
         if inputs is None:
@@ -60,23 +64,26 @@ class PyroSimulator(Simulator):
             log_p = log_p + dist.log_prob(z)
         return log_p
 
-    def _calculate_joint_score(self, trace, params):
-        params.requires_grad = True
+    def _calculate_joint_score(self, trace, inputs):
         score = 0.
         for dist, z, _ in self._get_branchings(trace):
             log_p = dist.log_prob(z)
-            score = score + grad(
-                log_p,
-                params,
-                grad_outputs=torch.ones_like(log_p.data),
-                only_inputs=True,
-                create_graph=False,
-            )
+            try:
+                score = score + grad(
+                    log_p,
+                    inputs,
+                    grad_outputs=torch.ones_like(log_p.data),
+                    only_inputs=True,
+                    create_graph=False,
+                )[0]
+            except RuntimeError:
+                # This can happen when individual distributions do not depend on the input params
+                pass
         return score
 
-    def _calculate_joint_likelihood_ratio(self, trace, params_num, params_den):
-        trace_num = self._replayed_trace(trace, params_num)
-        trace_den = self._replayed_trace(trace, params_den)
+    def _calculate_joint_log_likelihood_ratio(self, trace, inputs_num, inputs_den):
+        trace_num = self._replayed_trace(trace, inputs_num)
+        trace_den = self._replayed_trace(trace, inputs_den)
 
         log_p_num = self._calculate_joint_log_prob(trace_num)
         log_p_den = self._calculate_joint_log_prob(trace_den)
