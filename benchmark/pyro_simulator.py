@@ -67,6 +67,7 @@ class PyroSimulator(Simulator):
     def _calculate_joint_score(self, trace, inputs):
         score = 0.
         for dist, z, _ in self._get_branchings(trace):
+            z = z.detach()
             log_p = dist.log_prob(z)
             try:
                 score = score + grad(
@@ -74,7 +75,7 @@ class PyroSimulator(Simulator):
                     inputs,
                     grad_outputs=torch.ones_like(log_p.data),
                     only_inputs=True,
-                    create_graph=False,
+                    retain_graph=True,
                 )[0]
             except RuntimeError:
                 # This can happen when individual distributions do not depend on the input params

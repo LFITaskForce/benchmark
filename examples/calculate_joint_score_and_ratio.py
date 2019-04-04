@@ -14,15 +14,15 @@ class SuperSimpleSimulator(PyroSimulator):
 
 sim = SuperSimpleSimulator()
 
-n_samples = 10000
+n_samples = 100000
 theta = torch.tensor([[0.3, 1.5] for _ in range(n_samples)])
 theta_ref = torch.tensor([[0., 1.] for _ in range(n_samples)])
 
 x, joint_score, joint_log_ratio = sim.augmented_data(theta, theta_ref, None)
 
-print(x)  # Seems okay
-print(joint_score)  # The first component is always 0. It seems that the mean of the Gaussian does not affect log_prob?
-print(joint_log_ratio)  # Seems to work
+print(x)
+print(joint_score)
+print(joint_log_ratio)
 
-print(torch.mean(joint_score, dim=0))  # The second component does not average out to 0, as it should...
-print(torch.mean(torch.exp(joint_log_ratio), dim=0))  # Seems to work
+print(torch.mean(joint_score, dim=0))
+print(torch.mean(torch.exp(joint_log_ratio), dim=0))

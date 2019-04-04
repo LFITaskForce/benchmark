@@ -8,7 +8,7 @@ mean = torch.tensor([1. for _ in range(n_samples)], requires_grad=True)
 std = torch.tensor([2. for _ in range(n_samples)], requires_grad=True)
 
 normal = Normal(mean, std)
-x = pyro.sample("normal", normal)
+x = pyro.sample("normal", normal).detach()
 
 log_prob = normal.log_prob(x)
 
@@ -19,7 +19,6 @@ score_mean = grad(
     only_inputs=True,
     retain_graph=True,
 )[0]
-
 score_std = grad(
     log_prob,
     std,
